@@ -1,35 +1,17 @@
-import os
-import pathlib
+from pathlib import Path
+import argparse
 
+parser = argparse.ArgumentParser()
 
-def organize(path, dir_list, files_list):
-    for file in files_list:
-        dir_name = ""
-        for x in pathlib.Path(file).suffixes:
-            dir_name += x
-        dir_name = dir_name.replace(".", "")
-        if (path + dir_name + "/" in dir_list):
-            os.system(f"mv {file} {path + dir_name}/")
+parser.add_argument("path", type=str, help="the dir you want to organize")
+
+args = parser.parse_args()
+
+for target in list(Path(args.path).iterdir()):
+    if Path(target).is_file():
+        file_suffix = Path(target).suffixes[len(Path(target).suffixes) - 1].replace(".", "")
+        if (Path(args.path) / file_suffix) in list(Path(args.path).iterdir()):
+            Path(target).rename(Path(args.path) / file_suffix / Path(target).name)
         else:
-            os.mkdir(path + dir_name + "/")
-            os.system(f"mv {file} {path + dir_name}/")
-
-
-path = "/home/kaiky/Downloads/"
-dir_list = []
-files_list = []
-
-for target in os.listdir(path):
-    if os.path.isdir(path + target):
-        dir_list.append(path + target + "/")
-
-for target in os.listdir(path):
-    if os.path.isfile(path + target):
-        files_list.append(path + target)
-
-print("Before:")
-os.system(f"ls {path}")
-organize(path, dir_list, files_list)
-print("*" * 80)
-print("After:")
-os.system(f"ls {path}")
+            (Path(args.path) / file_suffix).mkdir()
+            Path(target).rename(Path(args.path) / file_suffix / Path(target).name)
